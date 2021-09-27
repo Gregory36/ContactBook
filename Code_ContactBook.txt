@@ -1,0 +1,562 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ContactBook
+{
+    public class Contact
+    {
+        public string Name;
+        public string Surname;
+        public string DateOfBirth;
+        public string Company;
+        public string Email;
+        public string PhoneNumber;
+        public bool Selected;
+    }
+    class Program
+    {
+        public static List<Contact> contactBook = new List<Contact>();
+        static void Main()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.Write("Для добавления контакта нажмите клавишу F1" +
+                    "\nДля просмотра списка контактов нажмите клавишу F2" +
+                    "\nДля поиска по списку контактов нажмите клавишу F3" +
+                    "\nДля просмотра списка избранных контактов нажмите клавишу F4" +
+                    "\nДля выхода из программы нажмите клавишу F9\n");
+                ConsoleKeyInfo key = Console.ReadKey(true);
+                switch (key.Key)
+                {
+                    case ConsoleKey.F1: AddContact(); break;
+                    case ConsoleKey.F2: CheckBookContacts(); break;
+                    case ConsoleKey.F3: SearchForContacts(); break;
+                    case ConsoleKey.F4: CheckSelectedContacts(); break;
+                    case ConsoleKey.F9: return;
+                    default: Console.Write("\nНажатая клавиша не распознана."); System.Threading.Thread.Sleep(2000); break;
+                }
+            }
+        }
+        public static void AddContact()
+        {
+            Contact contact = new Contact();
+            Console.Clear();
+            Console.Write("Введите имя:\n");
+            contact.Name = NameOrSurnameInput();
+            Console.Write("Введите фамилию:\n");
+            contact.Surname = NameOrSurnameInput();
+            Console.Write("Введите дату рождения в виде ДД.ММ.ГГГГ:\n");
+            contact.DateOfBirth = DateOfBirthInput();
+            Console.Write("\nВведите название компании:\n");
+            contact.Company = CompanyInput();
+            Console.Write("Введите email:\n");
+            contact.Email = EmailValidation();
+            Console.Write("Введите номер телефона:\n");
+            contact.PhoneNumber = PhoneNumberValidation();
+            contact.Selected = false;
+            Console.Write("\nДля добавления в список избранных нажмите F1, иначе - любую другую клавишу");
+            if (Console.ReadKey(true).Key == ConsoleKey.F1)
+            {
+                contact.Selected = true;
+                Console.Write("\nКонтакт добавлен в избранное!");
+                System.Threading.Thread.Sleep(2000);
+            }
+            contactBook.Add(contact);
+            Console.Clear();
+            Console.Write("Новый контакт добавлен!");
+            System.Threading.Thread.Sleep(2000);
+        }
+        public static string DateOfBirthInput()
+        {
+            string str = "";
+            char ch;
+            ConsoleKeyInfo key;
+            while(str.Length < 10)
+            {
+                key = Console.ReadKey(true);
+                ch = key.KeyChar;
+                if(char.IsDigit(ch))
+                {
+                    Console.Write(ch);
+                    str += ch;
+                    if(str.Length == 2) { str += "."; Console.Write("."); }
+                    if (str.Length == 5) { str += "."; Console.Write("."); }
+                }else if(key.Key == ConsoleKey.Backspace && str.Length > 0)
+                {
+                    if(str[str.Length-1] == '.')
+                    {
+                        str = str.Remove(str.Length - 2);
+                        Console.SetCursorPosition(Console.CursorLeft - 2, Console.CursorTop);
+                        Console.Write("  ");
+                        Console.SetCursorPosition(Console.CursorLeft - 2, Console.CursorTop);
+                    }
+                    else
+                    {
+                        str = str.Remove(str.Length - 1);
+                        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                        Console.Write(" ");
+                        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                    }
+                }
+            }
+            return str;
+        }
+        public static string CompanyInput()
+        {
+            string str;
+            while (true)
+            {
+                str = Console.ReadLine();
+                if (str.Length < 29 && str.Length > 1) return str;
+                str = "";
+                Console.Write("Длина ввода не должна превышать 30 символов, ввод не может быть пустым!\n");
+            }
+        }
+        public static string NameOrSurnameInput()
+        {
+            string str; 
+            while (true)
+            { 
+                str = Console.ReadLine();
+                bool verefication = true;
+                if (str.Length < 29 && str.Length > 1)
+                {
+                    foreach (char ch in str)
+                        if (!char.IsLetter(ch)) verefication = false;
+                    if (verefication) return str;
+                }
+                str = "";
+                Console.Write("Ввод должен содержать только буквы, длина ввода не должна превышать 30 символов и ввод не может быть пустым!\n");
+            }
+        }
+        public static string PhoneNumberValidation()
+        {
+            string str = "+7(";
+            char ch;
+            ConsoleKeyInfo key;
+            Console.Write(str);
+            while (str.Length < 16)
+            {
+                key = Console.ReadKey(true);
+                ch = key.KeyChar;
+                if (char.IsDigit(ch))
+                {
+                    Console.Write(ch);
+                    str += ch;
+                    if (str.Length == 6) { str += ")"; Console.Write(")"); }
+                    if (str.Length == 10) { str += "-"; Console.Write("-"); }
+                    if (str.Length == 13) { str += "-"; Console.Write("-"); }
+                }
+                else if (key.Key == ConsoleKey.Backspace && str.Length > 3)
+                {
+                    if (str[str.Length - 1] == '-' || str[str.Length - 1] == ')')
+                    {
+                        str = str.Remove(str.Length - 2);
+                        Console.SetCursorPosition(Console.CursorLeft - 2, Console.CursorTop);
+                        Console.Write("  ");
+                        Console.SetCursorPosition(Console.CursorLeft - 2, Console.CursorTop);
+                    }
+                    else
+                    {
+                        str = str.Remove(str.Length - 1);
+                        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                        Console.Write(" ");
+                        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                    }
+                }
+            }
+            return str;
+            
+        }
+        public static string EmailValidation()
+        {
+            string str;
+            while (true)
+            {
+                str = Console.ReadLine();
+                if (isValid(str.ToArray())) return str;
+                Console.Write("\nНекорректный email!\n");
+                System.Threading.Thread.Sleep(2000);
+            }
+        }
+        public static void CheckBookContacts()
+        {
+            Console.Clear();
+            Console.Write("Список контактов:\n");
+            int i = 1;
+            foreach(Contact contact in contactBook)
+            {
+                Console.Write("{3}. {0} {1} - {2}\n",contact.Name,contact.Surname,contact.PhoneNumber,i);
+                i++;
+            }
+            Console.Write("\nДля редактирования списка контактов нажмите клавишу F5" +
+                          "\nДля выхода нажмите любую другую клавишу");
+            ConsoleKeyInfo key = Console.ReadKey(true);
+            switch (key.Key)
+            {
+                case ConsoleKey.F5: 
+                    Console.Write("\nНаберите порядковый номер контакта:\n");
+                    string str;
+                    while(true)
+                    {
+                        str = Console.ReadLine();
+                        if (int.TryParse(str, out int number))
+                            if (number > 0 && number <= contactBook.Count)
+                            {
+                                EditOrDeleteContacts(number-1);
+                                break;
+                            }
+                        Console.Write("\nНекорректный ввод! Попробуйте еще раз.\n");
+                    }
+                    break;
+                default: System.Threading.Thread.Sleep(200); break;
+            }
+        }
+        public static void CheckSelectedContacts()
+        {
+            Console.Clear();
+            Console.Write("Список избранных контактов:\n");
+            int i = 1;
+            foreach (Contact contact in contactBook)
+            {
+                if(contact.Selected)
+                {
+                    Console.Write("{3}. {0} {1} - {2}\n", contact.Name, contact.Surname, contact.PhoneNumber, i);
+                    i++;
+                }
+            }
+            Console.Write("\nДля продолжения нажмите любую клавишу");
+            Console.ReadKey();
+        }
+        public static void SearchForContacts()
+        {
+            Console.Clear();
+            string str;
+            bool successfulSearch, allSearch;
+            Console.Write("Введите текст, программа найдет все совпадения в списке контактов:\n");
+            str = Console.ReadLine(); // поиск скорее всего должен содержать более 3-х символов
+            allSearch = false;
+            foreach(var contact in contactBook)
+            {
+                successfulSearch = false;
+                if (contact.Name.Contains(str))
+                {
+                    Console.Write("\nНайдено совпадение по имени контакта: {0}\n", contact.Name);
+                    successfulSearch = true;
+                }
+                if (contact.Surname.Contains(str))
+                {
+                    Console.Write("\nНайдено совпадение по фамилии контакта: {0}\n", contact.Surname);
+                    successfulSearch = true;
+                }
+                if (contact.PhoneNumber.Contains(str))
+                {
+                    Console.Write("\nНайдено совпадение по номеру телефона контакта: {0}\n", contact.PhoneNumber);
+                    successfulSearch = true;
+                }
+                if (contact.Email.Contains(str))
+                {
+                    Console.Write("\nНайдено совпадение по email-адресу контакта: {0}\n", contact.Email);
+                    successfulSearch = true;
+                }
+                if (successfulSearch)
+                {
+                    Console.Write("(Контакт: {0} {1})\n", contact.Surname, contact.Name);
+                    allSearch = true;
+                    Console.Write("\nДля перехода к контакту нажмите клавишу F1, для выхода - F9" +
+                        "\nДля продолжения поиска совпадений с другими контактами нажмите любую другую клавишу\n");
+                    ConsoleKeyInfo key = Console.ReadKey(true);
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.F1: EditOrDeleteContacts(contactBook.IndexOf(contact)); return;
+                        case ConsoleKey.F9: return;
+                        default: break;
+                    }
+                }
+            }
+            Console.Write("\nПоиск завершен!\n");
+            if (!allSearch) Console.Write("\nПо вашему запросу ничего не найдено.\n");
+            System.Threading.Thread.Sleep(2000);
+        }
+        public static void EditOrDeleteContacts(int index)
+        {
+            Contact contact = contactBook[index];
+            string selected = "нет";
+            Console.Clear();
+            Console.Write("Редактируемый контакт:");
+            Console.Write("\n1. Имя: {0}\n   Фамилия: {1}", contact.Name, contact.Surname);
+            Console.Write("\n2. Дата рождения: {0}", contact.DateOfBirth);
+            Console.Write("\n3. Компания: {0}", contact.Company);
+            Console.Write("\n4. Email: {0}", contact.Email);
+            Console.Write("\n5. Номер телефона: {0}", contact.PhoneNumber);
+            if (contact.Selected) selected = "да";
+            Console.Write("\n6. Контакт добавлен в избранное: {0}", selected);
+            Console.Write("\nДля редактирования контакта нажмите клавишу F1" +
+                   "\nДля удаления из списка контактов нажмите клавишу F2" +
+                   "\nДля возврата в меню программы нажмите клавишу F9\n");
+            ConsoleKeyInfo key = Console.ReadKey(true);
+            switch (key.Key)
+            {
+                case ConsoleKey.F1: EditContact(contact); EditOrDeleteContacts(index); break;
+                case ConsoleKey.F2: contactBook.RemoveAt(index); Console.Write("\nКонтакт удален!"); System.Threading.Thread.Sleep(2000); break;
+                case ConsoleKey.F9: return;
+                default: Console.Write("\nНажатая клавиша не распознана."); System.Threading.Thread.Sleep(2000); break;
+            } 
+        }
+        public static void EditContact(Contact contact)
+        {
+            Console.Write("\nНаберите номер редактируемого параметра согласно нумерации:\n");
+            string str;
+            while (true)
+            {
+                str = Console.ReadLine();
+                if (int.TryParse(str, out int number))
+                    if (number > 0 && number <= 6)
+                    {
+                        Console.Clear();
+                        switch (number)
+                        {
+                            case 1:
+                                Console.Write("Введите имя:\n");
+                                contact.Name = NameOrSurnameInput();
+                                Console.Write("Введите фамилию:\n");
+                                contact.Surname = NameOrSurnameInput();
+                                break;
+                            case 2:
+                                Console.Write("Введите дату рождения в виде ДД.ММ.ГГГГ:\n");
+                                contact.DateOfBirth = DateOfBirthInput();
+                                break;
+                            case 3:
+                                Console.Write("\nВведите название компании:\n");
+                                contact.Company = CompanyInput();
+                                break;
+                            case 4:
+                                Console.Write("Введите email:\n");
+                                contact.Email = EmailValidation();
+                                break;
+                            case 5:
+                                Console.Write("Введите номер телефона:\n");
+                                contact.PhoneNumber = PhoneNumberValidation(); break;
+                            case 6:
+                                contact.Selected = false;
+                                Console.Write("\nДля добавления в список избранных нажмите F1, иначе - любую другую клавишу");
+                                if (Console.ReadKey(true).Key == ConsoleKey.F1)
+                                {
+                                    contact.Selected = true;
+                                    Console.Write("\nКонтакт добавлен в избранное!");
+                                    System.Threading.Thread.Sleep(2000);
+                                }
+                                break;
+                        }
+                        break;
+                    }
+                Console.Write("\nНекорректный ввод! Попробуйте еще раз.");
+            }
+
+
+        }
+        public static bool isValid(char[] input)
+        {
+            if (input == null)
+            {
+                return false;
+            }
+
+            int state = 0;
+            char ch;
+            int index = 0;
+            int mark = 0;
+            String local = null;
+            List<String> domain = new List<String>();
+
+            while (index <= input.Length && state != -1)
+            {
+
+                if (index == input.Length)
+                {
+                    ch = '\0'; // Так мы обозначаем конец нашей работы
+                }
+                else
+                {
+                    ch = input[index];
+                    if (ch == '\0')
+                    {
+                        // символ, которым мы кодируем конец работы, не может быть частью ввода
+                        return false;
+                    }
+                }
+
+                switch (state)
+                {
+
+                    case 0:
+                        {
+                            // Первый символ {atext} -- текстовой части локального имени
+                            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
+                                    || (ch >= '0' && ch <= '9') || ch == '_' || ch == '-'
+                                    || ch == '+')
+                            {
+                                state = 1;
+                                break;
+                            }
+                            // Если встретили неправильный символ -> отмечаемся в state об ошибке
+                            state = -1;
+                            break;
+                        }
+
+                    case 1:
+                        {
+                            // Остальные символы {atext} -- текстовой части локального имени
+                            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
+                                    || (ch >= '0' && ch <= '9') || ch == '_' || ch == '-'
+                                    || ch == '+')
+                            {
+                                break;
+                            }
+                            if (ch == '.')
+                            {
+                                state = 2;
+                                break;
+                            }
+                            if (ch == '@')
+                            { // Конец локальной части
+                                local = new String(input, 0, index - mark);
+                                mark = index + 1;
+                                state = 3;
+                                break;
+                            }
+                            // Если встретили неправильный символ -> отмечаемся в state об ошибке
+                            state = -1;
+                            break;
+                        }
+
+                    case 2:
+                        {
+                            // Переход к {atext} (текстовой части) после точки
+                            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')
+                                    || (ch >= '0' && ch <= '9') || ch == '_' || ch == '-'
+                                    || ch == '+')
+                            {
+                                state = 1;
+                                break;
+                            }
+                            // Если встретили неправильный символ -> отмечаемся в state об ошибке
+                            state = -1;
+                            break;
+                        }
+
+                    case 3:
+                        {
+                            // Переходим {alnum} (домену), проверяем первый символ
+                            if ((ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9')
+                                    || (ch >= 'A' && ch <= 'Z'))
+                            {
+                                state = 4;
+                                break;
+                            }
+                            // Если встретили неправильный символ -> отмечаемся в state об ошибке
+                            state = -1;
+                            break;
+                        }
+
+                    case 4:
+                        {
+                            // Собираем {alnum} --- домен
+                            if ((ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9')
+                                    || (ch >= 'A' && ch <= 'Z'))
+                            {
+                                break;
+                            }
+                            if (ch == '-')
+                            {
+                                state = 5;
+                                break;
+                            }
+                            if (ch == '.')
+                            {
+                                domain.Add(new String(input, mark, index - mark));
+                                mark = index + 1;
+                                state = 5;
+                                break;
+                            }
+                            // Проверка на конец строки
+                            if (ch == '\0')
+                            {
+                                domain.Add(new String(input, mark, index - mark));
+                                state = 6;
+                                break; // Дошли до конца строки -> заканчиваем работу
+                            }
+                            // Если встретили неправильный символ -> отмечаемся в state об ошибке
+                            state = -1;
+                            break;
+                        }
+
+                    case 5:
+                        {
+                            if ((ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9')
+                                    || (ch >= 'A' && ch <= 'Z'))
+                            {
+                                state = 4;
+                                break;
+                            }
+                            if (ch == '-')
+                            {
+                                break;
+                            }
+                            // Если встретили неправильный символ -> отмечаемся в state об ошибке
+                            state = -1;
+                            break;
+                        }
+
+                    case 6:
+                        {
+                            // Успех! (На самом деле, мы сюда никогда не попадём)
+                            break;
+                        }
+                }
+                index++;
+            }
+
+            // Остальные проверки
+
+            // Не прошли проверку выше? Возвращаем false!
+            if (state != 6)
+                return false;
+
+            // Нам нужен домен как минимум второго уровня
+            if (domain.Count < 2)
+                return false;
+
+            // Ограничения длины по спецификации RFC 5321
+            if (local.Length > 64)
+                return false;
+
+            // Ограничения длины по спецификации RFC 5321
+            if (input.Length > 254)
+                return false;
+
+            // Домен верхнего уровня должен состоять только из букв и быть не короче двух символов
+            index = input.Length - 1;
+            while (index > 0)
+            {
+                ch = input[index];
+                if (ch == '.' && input.Length - index > 2)
+                {
+                    return true;
+                }
+                if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')))
+                {
+                    return false;
+                }
+                index--;
+            }
+
+            return true;
+        }
+    }
+}
